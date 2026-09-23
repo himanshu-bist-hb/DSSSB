@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next_stale_backup_*/
 /out/
 
 # production
@@ -36,6 +37,17 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local AI tool skill caches (not app code)
+/.agents/
+/.claude/
+/.windsurf/
+
+# local source material / scratch files (not app code)
+/Documents/
+/Practice.html
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
