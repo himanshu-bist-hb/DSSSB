@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { DifficultyPill } from "@/components/DifficultyPill";
 
 type Progress = {
@@ -27,14 +28,21 @@ type Filter = (typeof FILTERS)[number];
 export function QuizClient({
   topicId,
   questions: initialQuestions,
+  resultHref,
 }: {
   topicId: string;
   questions: Question[];
+  resultHref: string;
 }) {
   const [questions, setQuestions] = useState(initialQuestions);
   const [filter, setFilter] = useState<Filter>("All");
   const [unattemptedOnly, setUnattemptedOnly] = useState(false);
-  const [index, setIndex] = useState(0);
+  // Resume where the user left off: land on the first unanswered question
+  // instead of always restarting from the top.
+  const [index, setIndex] = useState(() => {
+    const firstUnattempted = initialQuestions.findIndex((q) => !q.progress);
+    return firstUnattempted === -1 ? Math.max(initialQuestions.length - 1, 0) : firstUnattempted;
+  });
   const [pending, setPending] = useState(false);
   const [resetting, setResetting] = useState(false);
 
@@ -148,6 +156,8 @@ export function QuizClient({
   }
 
   const attemptedCount = questions.filter((q) => q.progress).length;
+  const allDone = questions.length > 0 && attemptedCount === questions.length;
+  const correctCount = questions.filter((q) => q.progress?.isCorrect).length;
 
   if (questions.length === 0) {
     return (
@@ -286,6 +296,21 @@ export function QuizClient({
                   {current.progress.explanation}
                 </p>
               )}
+            </div>
+          )}
+
+          {allDone && (
+            <div className="mt-4 flex flex-col items-center gap-1 rounded-2xl border border-accent bg-accent-soft px-4 py-4 text-center">
+              <p className="text-sm font-semibold text-foreground">Section complete 🎉</p>
+              <p className="text-xs text-muted">
+                {correctCount}/{questions.length} correct
+              </p>
+              <Link
+                href={resultHref}
+                className="mt-2 rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white"
+              >
+                View Result
+              </Link>
             </div>
           )}
 

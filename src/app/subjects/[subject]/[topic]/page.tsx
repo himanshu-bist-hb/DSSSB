@@ -23,14 +23,18 @@ export default async function TopicQuizPage({
         title={data.topic.name}
         right={
           <Link
-            href={`/subjects/${subjectSlug}/${topicSlug}/review`}
+            href={`/subjects/${subjectSlug}/${topicSlug}/result`}
             className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
           >
-            Review
+            Result
           </Link>
         }
       />
-      <QuizClient topicId={data.topic.id} questions={data.questions} />
+      <QuizClient
+        topicId={data.topic.id}
+        questions={data.questions}
+        resultHref={`/subjects/${subjectSlug}/${topicSlug}/result`}
+      />
     </div>
   );
 }

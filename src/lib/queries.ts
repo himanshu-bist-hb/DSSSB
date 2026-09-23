@@ -86,30 +86,36 @@ export async function getSubjectWithTopics(subjectSlug: string, userId: string) 
   };
 }
 
-export type WrongQuestionReview = {
+export type ResultQuestion = {
   id: string;
   text: string;
   options: { id: string; text: string }[];
   selectedOption: string | null;
   correctOption: string;
   explanation: string | null;
+  difficulty: Difficulty;
+  isPYQ: boolean;
+  pyqYear: number | null;
 };
 
-export type TopicReview = {
+export type TopicResult = {
   subject: { slug: string; name: string };
   topic: { id: string; slug: string; name: string };
   totalQuestions: number;
   attempted: number;
   correct: number;
   wrong: number;
-  wrongQuestions: WrongQuestionReview[];
+  pyqAttempted: number;
+  pyqCorrect: number;
+  pyqWrong: number;
+  wrongQuestions: ResultQuestion[];
 };
 
-export async function getTopicReview(
+export async function getTopicResult(
   subjectSlug: string,
   topicSlug: string,
   userId: string
-): Promise<TopicReview | null> {
+): Promise<TopicResult | null> {
   const subject = await prisma.subject.findUnique({ where: { slug: subjectSlug } });
   if (!subject) return null;
 
@@ -126,17 +132,30 @@ export async function getTopicReview(
       selectedOption: true,
       isCorrect: true,
       question: {
-        select: { id: true, text: true, options: true, correctOption: true, explanation: true },
+        select: {
+          id: true,
+          text: true,
+          options: true,
+          correctOption: true,
+          explanation: true,
+          difficulty: true,
+          isPYQ: true,
+          pyqYear: true,
+        },
       },
     },
   });
 
   let correct = 0;
-  const wrongQuestions: WrongQuestionReview[] = [];
+  let pyqAttempted = 0;
+  let pyqCorrect = 0;
+  const wrongQuestions: ResultQuestion[] = [];
   for (const p of progress) {
     if (p.status !== "ATTEMPTED") continue;
+    if (p.question.isPYQ) pyqAttempted += 1;
     if (p.isCorrect) {
       correct += 1;
+      if (p.question.isPYQ) pyqCorrect += 1;
       continue;
     }
     wrongQuestions.push({
@@ -146,6 +165,9 @@ export async function getTopicReview(
       selectedOption: p.selectedOption,
       correctOption: p.question.correctOption,
       explanation: p.question.explanation,
+      difficulty: p.question.difficulty as Difficulty,
+      isPYQ: p.question.isPYQ,
+      pyqYear: p.question.pyqYear,
     });
   }
 
@@ -156,6 +178,9 @@ export async function getTopicReview(
     attempted: progress.length,
     correct,
     wrong: wrongQuestions.length,
+    pyqAttempted,
+    pyqCorrect,
+    pyqWrong: pyqAttempted - pyqCorrect,
     wrongQuestions,
   };
 }

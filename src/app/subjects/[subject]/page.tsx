@@ -49,10 +49,10 @@ export default async function SubjectPage({
                   <span className="font-medium text-[#a13a3a]">{t.wrongCount} wrong</span>
                 </p>
                 <Link
-                  href={`/subjects/${subject.slug}/${t.slug}/review`}
+                  href={`/subjects/${subject.slug}/${t.slug}/result`}
                   className="shrink-0 text-xs font-medium text-accent underline underline-offset-2"
                 >
-                  Review
+                  Result
                 </Link>
               </div>
             )}
