@@ -55,15 +55,19 @@ export async function getSubjectWithTopics(subjectSlug: string, userId: string) 
 
   const progress = await prisma.userProgress.findMany({
     where: { userId, question: { topic: { subjectId: subject.id } } },
-    select: { question: { select: { topicId: true } }, isCorrect: true },
+    select: { question: { select: { topicId: true } }, status: true, isCorrect: true },
   });
 
   const attemptedByTopic = new Map<string, number>();
   const correctByTopic = new Map<string, number>();
+  const wrongByTopic = new Map<string, number>();
   for (const p of progress) {
     const tId = p.question.topicId;
     attemptedByTopic.set(tId, (attemptedByTopic.get(tId) ?? 0) + 1);
-    if (p.isCorrect) correctByTopic.set(tId, (correctByTopic.get(tId) ?? 0) + 1);
+    if (p.status === "ATTEMPTED") {
+      if (p.isCorrect) correctByTopic.set(tId, (correctByTopic.get(tId) ?? 0) + 1);
+      else wrongByTopic.set(tId, (wrongByTopic.get(tId) ?? 0) + 1);
+    }
   }
 
   return {
@@ -77,7 +81,82 @@ export async function getSubjectWithTopics(subjectSlug: string, userId: string) 
       questionCount: t._count.questions,
       attemptedCount: attemptedByTopic.get(t.id) ?? 0,
       correctCount: correctByTopic.get(t.id) ?? 0,
+      wrongCount: wrongByTopic.get(t.id) ?? 0,
     })),
+  };
+}
+
+export type WrongQuestionReview = {
+  id: string;
+  text: string;
+  options: { id: string; text: string }[];
+  selectedOption: string | null;
+  correctOption: string;
+  explanation: string | null;
+};
+
+export type TopicReview = {
+  subject: { slug: string; name: string };
+  topic: { id: string; slug: string; name: string };
+  totalQuestions: number;
+  attempted: number;
+  correct: number;
+  wrong: number;
+  wrongQuestions: WrongQuestionReview[];
+};
+
+export async function getTopicReview(
+  subjectSlug: string,
+  topicSlug: string,
+  userId: string
+): Promise<TopicReview | null> {
+  const subject = await prisma.subject.findUnique({ where: { slug: subjectSlug } });
+  if (!subject) return null;
+
+  const topic = await prisma.topic.findUnique({
+    where: { subjectId_slug: { subjectId: subject.id, slug: topicSlug } },
+    select: { id: true, slug: true, name: true, _count: { select: { questions: true } } },
+  });
+  if (!topic) return null;
+
+  const progress = await prisma.userProgress.findMany({
+    where: { userId, question: { topicId: topic.id } },
+    select: {
+      status: true,
+      selectedOption: true,
+      isCorrect: true,
+      question: {
+        select: { id: true, text: true, options: true, correctOption: true, explanation: true },
+      },
+    },
+  });
+
+  let correct = 0;
+  const wrongQuestions: WrongQuestionReview[] = [];
+  for (const p of progress) {
+    if (p.status !== "ATTEMPTED") continue;
+    if (p.isCorrect) {
+      correct += 1;
+      continue;
+    }
+    wrongQuestions.push({
+      id: p.question.id,
+      text: p.question.text,
+      options: JSON.parse(p.question.options) as { id: string; text: string }[],
+      selectedOption: p.selectedOption,
+      correctOption: p.question.correctOption,
+      explanation: p.question.explanation,
+    });
+  }
+
+  return {
+    subject: { slug: subject.slug, name: subject.name },
+    topic: { id: topic.id, slug: topic.slug, name: topic.name },
+    totalQuestions: topic._count.questions,
+    attempted: progress.length,
+    correct,
+    wrong: wrongQuestions.length,
+    wrongQuestions,
   };
 }
 

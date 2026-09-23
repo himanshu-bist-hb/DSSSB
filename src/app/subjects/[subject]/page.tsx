@@ -22,22 +22,41 @@ export default async function SubjectPage({
       <div className="flex flex-1 flex-col gap-2.5 px-5 py-4">
         <p className="px-1 text-xs font-medium text-muted">Choose a topic</p>
         {subject.topics.map((t) => (
-          <Link
+          <div
             key={t.id}
-            href={`/subjects/${subject.slug}/${t.slug}`}
-            className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 transition active:scale-[0.99]"
+            className="flex flex-col gap-2 rounded-2xl border border-border bg-card px-4 py-3.5"
           >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">{t.name}</p>
-              <p className="text-xs text-muted">
-                {t.questionCount} questions ·{" "}
-                {t.attemptedCount > 0
-                  ? `${t.attemptedCount}/${t.questionCount} done`
-                  : "Not started"}
-              </p>
-            </div>
-            <ProgressBadge attempted={t.attemptedCount} total={t.questionCount} />
-          </Link>
+            <Link
+              href={`/subjects/${subject.slug}/${t.slug}`}
+              className="flex items-center justify-between gap-3 transition active:scale-[0.99]"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-foreground">{t.name}</p>
+                <p className="text-xs text-muted">
+                  {t.questionCount} questions ·{" "}
+                  {t.attemptedCount > 0
+                    ? `${t.attemptedCount}/${t.questionCount} done`
+                    : "Not started"}
+                </p>
+              </div>
+              <ProgressBadge attempted={t.attemptedCount} total={t.questionCount} />
+            </Link>
+            {t.attemptedCount > 0 && (
+              <div className="flex items-center justify-between gap-3 border-t border-border pt-2">
+                <p className="text-xs text-muted">
+                  <span className="font-medium text-[#3f7a53]">{t.correctCount} correct</span>
+                  {" · "}
+                  <span className="font-medium text-[#a13a3a]">{t.wrongCount} wrong</span>
+                </p>
+                <Link
+                  href={`/subjects/${subject.slug}/${t.slug}/review`}
+                  className="shrink-0 text-xs font-medium text-accent underline underline-offset-2"
+                >
+                  Review
+                </Link>
+              </div>
+            )}
+          </div>
         ))}
 
         {subject.topics.length === 0 && (

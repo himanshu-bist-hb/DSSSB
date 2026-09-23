@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getTopicQuiz } from "@/lib/queries";
@@ -16,7 +17,19 @@ export default async function TopicQuizPage({
 
   return (
     <div className="flex flex-1 flex-col">
-      <TopBar backHref={`/subjects/${subjectSlug}`} eyebrow={data.subject.name} title={data.topic.name} />
+      <TopBar
+        backHref={`/subjects/${subjectSlug}`}
+        eyebrow={data.subject.name}
+        title={data.topic.name}
+        right={
+          <Link
+            href={`/subjects/${subjectSlug}/${topicSlug}/review`}
+            className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
+          >
+            Review
+          </Link>
+        }
+      />
       <QuizClient topicId={data.topic.id} questions={data.questions} />
     </div>
   );
