@@ -18,7 +18,15 @@ export default async function HomePage() {
             What are we studying today?
           </h1>
         </div>
-        <SignOutButton />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/stats"
+            className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
+          >
+            Stats
+          </Link>
+          <SignOutButton />
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col gap-2.5 px-5 pb-8">

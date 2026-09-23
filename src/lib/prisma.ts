@@ -27,7 +27,9 @@ function parseDatabaseUrl(url: string): sql.config {
     },
     requestTimeout: 60_000,
     connectionTimeout: 60_000,
-    pool: { max: 5, min: 0, idleTimeoutMillis: 120_000, acquireTimeoutMillis: 60_000 },
+    // min: 1 keeps a connection warm on the lambda instance between requests instead
+    // of reconnecting from scratch on every invocation.
+    pool: { max: 5, min: 1, idleTimeoutMillis: 120_000, acquireTimeoutMillis: 60_000 },
   };
 }
 
@@ -35,8 +37,11 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+// Cache on globalThis in ALL environments, not just dev: Vercel reuses the same
+// serverless instance ("warm") across requests, and without this every request
+// opened a brand-new PrismaClient + a fresh TCP/TLS connection to Azure SQL.
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({ adapter: new PrismaMssql(parseDatabaseUrl(process.env.DATABASE_URL!)) });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+globalForPrisma.prisma = prisma;

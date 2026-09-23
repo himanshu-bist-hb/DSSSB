@@ -81,6 +81,91 @@ export async function getSubjectWithTopics(subjectSlug: string, userId: string) 
   };
 }
 
+type Tally = { attempted: number; correct: number };
+
+export type UserStats = {
+  totalQuestions: number;
+  attempted: number; // rows with status ATTEMPTED or REVEALED
+  answered: number; // rows with status ATTEMPTED (an option was actually picked)
+  correct: number;
+  incorrect: number;
+  accuracy: number; // % of answered questions that were correct
+  bySubject: (Tally & { id: string; slug: string; name: string })[];
+  byDifficulty: Record<Difficulty, Tally>;
+  pyq: Tally;
+  nonPyq: Tally;
+};
+
+export async function getUserStats(userId: string): Promise<UserStats> {
+  const [totalQuestions, progress] = await Promise.all([
+    prisma.question.count(),
+    prisma.userProgress.findMany({
+      where: { userId },
+      select: {
+        status: true,
+        isCorrect: true,
+        question: {
+          select: {
+            difficulty: true,
+            isPYQ: true,
+            topic: { select: { subject: { select: { id: true, slug: true, name: true } } } },
+          },
+        },
+      },
+    }),
+  ]);
+
+  const bySubject = new Map<string, Tally & { id: string; slug: string; name: string }>();
+  const byDifficulty: Record<Difficulty, Tally> = {
+    EASY: { attempted: 0, correct: 0 },
+    MEDIUM: { attempted: 0, correct: 0 },
+    HARD: { attempted: 0, correct: 0 },
+  };
+  const pyq: Tally = { attempted: 0, correct: 0 };
+  const nonPyq: Tally = { attempted: 0, correct: 0 };
+
+  let answered = 0;
+  let correct = 0;
+
+  for (const p of progress) {
+    const isAnswered = p.status === "ATTEMPTED";
+    const wasCorrect = isAnswered && p.isCorrect === true;
+    if (isAnswered) {
+      answered += 1;
+      if (wasCorrect) correct += 1;
+    }
+
+    const subj = p.question.topic.subject;
+    const s = bySubject.get(subj.id) ?? { ...subj, attempted: 0, correct: 0 };
+    s.attempted += 1;
+    if (wasCorrect) s.correct += 1;
+    bySubject.set(subj.id, s);
+
+    const diff = byDifficulty[p.question.difficulty as Difficulty];
+    if (diff) {
+      diff.attempted += 1;
+      if (wasCorrect) diff.correct += 1;
+    }
+
+    const bucket = p.question.isPYQ ? pyq : nonPyq;
+    bucket.attempted += 1;
+    if (wasCorrect) bucket.correct += 1;
+  }
+
+  return {
+    totalQuestions,
+    attempted: progress.length,
+    answered,
+    correct,
+    incorrect: answered - correct,
+    accuracy: answered > 0 ? Math.round((correct / answered) * 100) : 0,
+    bySubject: [...bySubject.values()].sort((a, b) => b.attempted - a.attempted),
+    byDifficulty,
+    pyq,
+    nonPyq,
+  };
+}
+
 export type QuestionForClient = {
   id: string;
   text: string;
