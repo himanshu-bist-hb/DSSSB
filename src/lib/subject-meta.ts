@@ -7,6 +7,7 @@ export const SUBJECT_META: Record<string, { icon: string; color: string; soft: s
   reasoning: { icon: "🧩", color: "#a3672b", soft: "#f8ecdd" },
   hindi: { icon: "अ", color: "#a13a3a", soft: "#f8e6e6" },
   english: { icon: "Aa", color: "#7a1f2b", soft: "#f6e9ea" },
+  "teaching-methodology": { icon: "🎓", color: "#2f6b5e", soft: "#e4f0ec" },
   "current-affairs": { icon: "📰", color: "#3a6b8a", soft: "#e6eff5" },
 };
 

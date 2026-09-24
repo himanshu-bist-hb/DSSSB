@@ -110,6 +110,9 @@ model Question {
   difficulty    String     @default("MEDIUM")
   isPYQ         Boolean    @default(false)
   pyqYear       Int?
+  // Exam date and shift(s) the question appeared in, e.g. "01 Nov 2025 · Shift 2".
+  // Several shifts are joined with "; ".
+  pyqShift      String?
   order         Int        @default(0)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

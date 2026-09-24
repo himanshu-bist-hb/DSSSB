@@ -93,6 +93,9 @@ export default async function TopicResultPage({
                       </span>
                     )}
                   </div>
+                  {q.isPYQ && q.pyqShift && (
+                    <p className="text-[11px] text-muted">Asked in: {q.pyqShift}</p>
+                  )}
                   <p className="text-sm leading-relaxed text-foreground">{q.text}</p>
 
                   <div className="flex flex-col gap-1.5">

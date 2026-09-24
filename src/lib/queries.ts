@@ -96,6 +96,7 @@ export type ResultQuestion = {
   difficulty: Difficulty;
   isPYQ: boolean;
   pyqYear: number | null;
+  pyqShift: string | null;
 };
 
 export type TopicResult = {
@@ -141,6 +142,7 @@ export async function getTopicResult(
           difficulty: true,
           isPYQ: true,
           pyqYear: true,
+          pyqShift: true,
         },
       },
     },
@@ -168,6 +170,7 @@ export async function getTopicResult(
       difficulty: p.question.difficulty as Difficulty,
       isPYQ: p.question.isPYQ,
       pyqYear: p.question.pyqYear,
+      pyqShift: p.question.pyqShift,
     });
   }
 
@@ -277,6 +280,7 @@ export type QuestionForClient = {
   difficulty: Difficulty;
   isPYQ: boolean;
   pyqYear: number | null;
+  pyqShift: string | null;
   progress: {
     status: "ATTEMPTED" | "REVEALED";
     selectedOption: string | null;
@@ -314,6 +318,7 @@ export async function getTopicQuiz(subjectSlug: string, topicSlug: string, userI
       difficulty: q.difficulty as Difficulty,
       isPYQ: q.isPYQ,
       pyqYear: q.pyqYear,
+      pyqShift: q.pyqShift,
       progress: p
         ? {
             status: p.status as "ATTEMPTED" | "REVEALED",

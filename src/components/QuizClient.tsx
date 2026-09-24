@@ -19,6 +19,7 @@ type Question = {
   difficulty: "EASY" | "MEDIUM" | "HARD";
   isPYQ: boolean;
   pyqYear: number | null;
+  pyqShift: string | null;
   progress: Progress | null;
 };
 
@@ -231,6 +232,9 @@ export function QuizClient({
                 </span>
               )}
             </div>
+            {current.isPYQ && current.pyqShift && (
+              <p className="mb-2 text-[11px] text-muted">Asked in: {current.pyqShift}</p>
+            )}
             <p className="text-sm leading-relaxed text-foreground">{current.text}</p>
           </div>
 
