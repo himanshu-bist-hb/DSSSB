@@ -19,6 +19,14 @@ export default async function HomePage() {
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          {session!.user.isAdmin && (
+            <Link
+              href="/admin"
+              className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"
+            >
+              Admin
+            </Link>
+          )}
           <Link
             href="/stats"
             className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground"

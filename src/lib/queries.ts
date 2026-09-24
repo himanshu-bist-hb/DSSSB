@@ -332,3 +332,91 @@ export async function getTopicQuiz(subjectSlug: string, topicSlug: string, userI
     questions,
   };
 }
+
+// ---------- Admin ----------
+
+// Auth.js database sessions default to a 30-day maxAge and push `expires`
+// forward when a session is used, so `expires - 30d` approximates last visit.
+const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+export type AdminUserRow = {
+  id: string;
+  name: string | null;
+  email: string;
+  image: string | null;
+  signedUpAt: Date;
+  lastActiveAt: Date;
+  answered: number;
+  correct: number;
+  accuracy: number;
+  revealed: number;
+};
+
+export async function getAdminOverview() {
+  const [users, progress, sessions] = await Promise.all([
+    prisma.user.findMany({
+      select: { id: true, name: true, email: true, image: true, createdAt: true },
+    }),
+    prisma.userProgress.groupBy({
+      by: ["userId", "status", "isCorrect"],
+      _count: { _all: true },
+      _max: { updatedAt: true },
+    }),
+    prisma.session.groupBy({ by: ["userId"], _max: { expires: true } }),
+  ]);
+
+  const rows = new Map<string, AdminUserRow>();
+  for (const u of users) {
+    rows.set(u.id, {
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      image: u.image,
+      signedUpAt: u.createdAt,
+      lastActiveAt: u.createdAt,
+      answered: 0,
+      correct: 0,
+      accuracy: 0,
+      revealed: 0,
+    });
+  }
+
+  const bump = (row: AdminUserRow, d?: Date | null) => {
+    if (d && d > row.lastActiveAt) row.lastActiveAt = d;
+  };
+
+  for (const s of sessions) {
+    const row = rows.get(s.userId);
+    if (row && s._max.expires) bump(row, new Date(s._max.expires.getTime() - SESSION_MAX_AGE_MS));
+  }
+  for (const g of progress) {
+    const row = rows.get(g.userId);
+    if (!row) continue;
+    bump(row, g._max.updatedAt);
+    if (g.status === "ATTEMPTED") {
+      row.answered += g._count._all;
+      if (g.isCorrect === true) row.correct += g._count._all;
+    } else {
+      row.revealed += g._count._all;
+    }
+  }
+
+  const list = [...rows.values()];
+  for (const r of list) r.accuracy = r.answered > 0 ? Math.round((r.correct / r.answered) * 100) : 0;
+  list.sort((a, b) => b.lastActiveAt.getTime() - a.lastActiveAt.getTime());
+
+  const now = Date.now();
+  const DAY = 24 * 60 * 60 * 1000;
+  const totalAnswered = list.reduce((n, r) => n + r.answered, 0);
+  const totalCorrect = list.reduce((n, r) => n + r.correct, 0);
+
+  return {
+    users: list,
+    totalUsers: list.length,
+    active7d: list.filter((r) => now - r.lastActiveAt.getTime() < 7 * DAY).length,
+    newUsers7d: list.filter((r) => now - r.signedUpAt.getTime() < 7 * DAY).length,
+    totalAnswered,
+    totalCorrect,
+    accuracy: totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0,
+  };
+}
