@@ -420,3 +420,105 @@ export async function getAdminOverview() {
     accuracy: totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0,
   };
 }
+
+export type AdminTopicRow = {
+  id: string;
+  name: string;
+  totalQuestions: number;
+  answered: number;
+  correct: number;
+  revealed: number;
+  lastAt: Date | null;
+};
+
+export type AdminSubjectRow = {
+  id: string;
+  slug: string;
+  name: string;
+  totalQuestions: number;
+  answered: number;
+  correct: number;
+  revealed: number;
+  topics: AdminTopicRow[];
+};
+
+export async function getAdminUserReport(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true, email: true, createdAt: true },
+  });
+  if (!user) return null;
+
+  const [subjects, progress] = await Promise.all([
+    prisma.subject.findMany({
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        topics: {
+          orderBy: { order: "asc" },
+          select: { id: true, name: true, _count: { select: { questions: true } } },
+        },
+      },
+    }),
+    prisma.userProgress.findMany({
+      where: { userId },
+      select: {
+        status: true,
+        isCorrect: true,
+        updatedAt: true,
+        question: { select: { topicId: true } },
+      },
+    }),
+  ]);
+
+  const byTopic = new Map<string, Pick<AdminTopicRow, "answered" | "correct" | "revealed" | "lastAt">>();
+  for (const p of progress) {
+    const t = byTopic.get(p.question.topicId) ?? { answered: 0, correct: 0, revealed: 0, lastAt: null };
+    if (p.status === "ATTEMPTED") {
+      t.answered += 1;
+      if (p.isCorrect === true) t.correct += 1;
+    } else {
+      t.revealed += 1;
+    }
+    if (!t.lastAt || p.updatedAt > t.lastAt) t.lastAt = p.updatedAt;
+    byTopic.set(p.question.topicId, t);
+  }
+
+  const rows: AdminSubjectRow[] = subjects.map((s) => {
+    const topics: AdminTopicRow[] = s.topics.map((t) => ({
+      id: t.id,
+      name: t.name,
+      totalQuestions: t._count.questions,
+      answered: 0,
+      correct: 0,
+      revealed: 0,
+      lastAt: null,
+      ...byTopic.get(t.id),
+    }));
+    const sum = (k: "totalQuestions" | "answered" | "correct" | "revealed") =>
+      topics.reduce((n, t) => n + t[k], 0);
+    return {
+      id: s.id,
+      slug: s.slug,
+      name: s.name,
+      totalQuestions: sum("totalQuestions"),
+      answered: sum("answered"),
+      correct: sum("correct"),
+      revealed: sum("revealed"),
+      topics,
+    };
+  });
+
+  const answered = rows.reduce((n, s) => n + s.answered, 0);
+  const correct = rows.reduce((n, s) => n + s.correct, 0);
+  return {
+    user,
+    subjects: rows,
+    answered,
+    correct,
+    accuracy: answered > 0 ? Math.round((correct / answered) * 100) : 0,
+    totalQuestions: rows.reduce((n, s) => n + s.totalQuestions, 0),
+  };
+}

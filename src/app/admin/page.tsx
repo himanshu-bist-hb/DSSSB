@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getAdminOverview } from "@/lib/queries";
@@ -52,9 +53,10 @@ export default async function AdminPage() {
         <section className="flex flex-col gap-2.5">
           <p className="px-1 text-xs font-medium text-muted">Users (most recently active first)</p>
           {o.users.map((u) => (
-            <div
+            <Link
               key={u.id}
-              className="flex flex-col gap-2 rounded-2xl border border-border bg-card px-4 py-3.5"
+              href={`/admin/users/${u.id}`}
+              className="flex flex-col gap-2 rounded-2xl border border-border bg-card px-4 py-3.5 transition active:scale-[0.99]"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -73,7 +75,8 @@ export default async function AdminPage() {
                 Last active {timeAgo(u.lastActiveAt)} ({fmt.format(u.lastActiveAt)}) · Joined{" "}
                 {fmt.format(u.signedUpAt)}
               </p>
-            </div>
+              <p className="text-[11px] font-medium text-foreground">View detailed report →</p>
+            </Link>
           ))}
         </section>
       </div>
