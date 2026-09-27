@@ -188,41 +188,40 @@ export function TutorClient() {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-muted">Your level</label>
-              <div className="flex gap-1.5">
-                {LEVELS.map((l) => (
-                  <button
-                    key={l}
-                    type="button"
-                    disabled={busy}
-                    onClick={() => setLevel(l)}
-                    className={`flex-1 rounded-lg px-2 py-1.5 text-[11px] font-medium transition disabled:opacity-60 ${
-                      level === l ? "bg-accent text-white" : "bg-[#efece3] text-muted hover:bg-[#e8e5dd]"
-                    }`}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-muted">Your level</label>
+            <div className="flex gap-1.5">
+              {LEVELS.map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setLevel(l)}
+                  className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition disabled:opacity-60 ${
+                    level === l ? "bg-accent text-white" : "bg-[#efece3] text-muted hover:bg-[#e8e5dd]"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
             </div>
-            <div>
-              <label className="mb-1 flex items-center justify-between text-xs font-medium text-muted">
-                <span>Lesson length</span>
-                <span className="text-foreground">{minutes} min</span>
-              </label>
-              <input
-                type="range"
-                min={5}
-                max={30}
-                step={1}
-                value={minutes}
-                disabled={busy}
-                onChange={(e) => setMinutes(parseInt(e.target.value, 10))}
-                className="w-full accent-[var(--accent)] disabled:opacity-60"
-              />
-            </div>
+          </div>
+
+          <div>
+            <label className="mb-2 flex items-center justify-between text-xs font-medium text-muted">
+              <span>Lesson length</span>
+              <span className="text-foreground">{minutes} min</span>
+            </label>
+            <input
+              type="range"
+              min={5}
+              max={30}
+              step={1}
+              value={minutes}
+              disabled={busy}
+              onChange={(e) => setMinutes(parseInt(e.target.value, 10))}
+              className="w-full accent-[var(--accent)] disabled:opacity-60"
+            />
           </div>
 
           <div>
