@@ -7,6 +7,7 @@ const bodySchema = z.object({
   questionId: z.string().min(1),
   selectedOption: z.string().min(1).optional(),
   reveal: z.boolean().optional(),
+  timeSpentMs: z.number().int().min(0).max(1000 * 60 * 60).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
-  const { questionId, selectedOption, reveal } = parsed.data;
+  const { questionId, selectedOption, reveal, timeSpentMs } = parsed.data;
 
   const question = await prisma.question.findUnique({ where: { id: questionId } });
   if (!question) {
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
       status,
       selectedOption: reveal ? null : selectedOption,
       isCorrect,
+      timeSpentMs,
     },
     update: {
       // Don't downgrade an already-answered question back to just "revealed",
@@ -48,6 +50,7 @@ export async function POST(req: NextRequest) {
       status: reveal ? undefined : status,
       selectedOption: reveal ? undefined : selectedOption,
       isCorrect: reveal ? undefined : isCorrect,
+      timeSpentMs: reveal ? undefined : timeSpentMs,
     },
   });
 
@@ -57,5 +60,6 @@ export async function POST(req: NextRequest) {
     isCorrect: progress.isCorrect,
     correctOption: question.correctOption,
     explanation: question.explanation,
+    timeSpentMs: progress.timeSpentMs,
   });
 }

@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { getSubjectWithTopics } from "@/lib/queries";
 import { TopBar } from "@/components/TopBar";
 import { ProgressBadge } from "@/components/ProgressBadge";
+import { formatDuration } from "@/lib/format";
 
 export default async function SubjectPage({
   params,
@@ -47,6 +48,7 @@ export default async function SubjectPage({
                   <span className="font-medium text-[#3f7a53]">{t.correctCount} correct</span>
                   {" · "}
                   <span className="font-medium text-[#a13a3a]">{t.wrongCount} wrong</span>
+                  {t.avgTimeMs != null && ` · ⏱ ${formatDuration(t.avgTimeMs)} avg`}
                 </p>
                 <Link
                   href={`/subjects/${subject.slug}/${t.slug}/result`}

@@ -134,6 +134,9 @@ model UserProgress {
   status         String
   selectedOption String?
   isCorrect      Boolean?
+  // Time in milliseconds from when the question first appeared to when it
+  // was answered or revealed. Null for rows created before this was tracked.
+  timeSpentMs    Int?
   attemptedAt    DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { DifficultyPill } from "@/components/DifficultyPill";
+import { formatDuration } from "@/lib/format";
 
 type Progress = {
   status: "ATTEMPTED" | "REVEALED";
@@ -10,6 +11,7 @@ type Progress = {
   isCorrect: boolean | null;
   correctOption: string;
   explanation: string | null;
+  timeSpentMs: number | null;
 };
 
 type Question = {
@@ -25,6 +27,27 @@ type Question = {
 
 const FILTERS = ["All", "Easy", "Medium", "Hard", "PYQ"] as const;
 type Filter = (typeof FILTERS)[number];
+
+// Self-contained ticking display for the currently open, unanswered question.
+// Remounted (via `key`) whenever the question changes, so it always starts
+// its own clock fresh instead of resetting shared state from an effect.
+function LiveTimer({ onTick }: { onTick: (start: number) => void }) {
+  const [elapsedMs, setElapsedMs] = useState(0);
+
+  useEffect(() => {
+    const start = Date.now();
+    onTick(start);
+    const interval = setInterval(() => setElapsedMs(Date.now() - start), 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onTick is only used to report the start time once, on mount
+  }, []);
+
+  return (
+    <span className="flex items-center gap-1 rounded-md bg-[#efece3] px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted">
+      ⏱ {formatDuration(elapsedMs)}
+    </span>
+  );
+}
 
 export function QuizClient({
   topicId,
@@ -61,6 +84,14 @@ export function QuizClient({
   const boundedIndex = Math.min(index, Math.max(filtered.length - 1, 0));
   const current = filtered[boundedIndex];
 
+  // The moment the current unanswered question's LiveTimer mounted; reported
+  // once via its onTick callback, used to compute the elapsed time on submit.
+  const questionStartRef = useRef<number | null>(null);
+
+  function elapsedSinceStart() {
+    return questionStartRef.current == null ? 0 : Date.now() - questionStartRef.current;
+  }
+
   function updateFilter(next: Filter) {
     setFilter(next);
     setIndex(0);
@@ -75,10 +106,11 @@ export function QuizClient({
     if (!current || current.progress || pending) return;
     setPending(true);
     try {
+      const timeSpentMs = elapsedSinceStart();
       const res = await fetch("/api/progress", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionId: current.id, selectedOption: optionId }),
+        body: JSON.stringify({ questionId: current.id, selectedOption: optionId, timeSpentMs }),
       });
       if (!res.ok) return;
       const data = await res.json();
@@ -93,6 +125,7 @@ export function QuizClient({
                   isCorrect: data.isCorrect,
                   correctOption: data.correctOption,
                   explanation: data.explanation,
+                  timeSpentMs: data.timeSpentMs,
                 },
               }
             : q
@@ -107,10 +140,11 @@ export function QuizClient({
     if (!current || current.progress || pending) return;
     setPending(true);
     try {
+      const timeSpentMs = elapsedSinceStart();
       const res = await fetch("/api/progress", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionId: current.id, reveal: true }),
+        body: JSON.stringify({ questionId: current.id, reveal: true, timeSpentMs }),
       });
       if (!res.ok) return;
       const data = await res.json();
@@ -125,6 +159,7 @@ export function QuizClient({
                   isCorrect: data.isCorrect,
                   correctOption: data.correctOption,
                   explanation: data.explanation,
+                  timeSpentMs: data.timeSpentMs,
                 },
               }
             : q
@@ -212,9 +247,19 @@ export function QuizClient({
             <p className="text-xs font-medium text-muted">
               Question {boundedIndex + 1} of {filtered.length}
             </p>
-            <p className="text-xs text-muted">
-              {attemptedCount}/{questions.length} done
-            </p>
+            <div className="flex items-center gap-2">
+              {!current.progress && (
+                <LiveTimer
+                  key={current.id}
+                  onTick={(start) => {
+                    questionStartRef.current = start;
+                  }}
+                />
+              )}
+              <p className="text-xs text-muted">
+                {attemptedCount}/{questions.length} done
+              </p>
+            </div>
           </div>
           <div className="mb-4 h-1 w-full overflow-hidden rounded-full bg-[#efece3]">
             <div
@@ -288,13 +333,20 @@ export function QuizClient({
 
           {current.progress && (
             <div className="mt-3 rounded-2xl border border-border bg-[#f5f3ec] p-4">
-              <p className="mb-1 text-xs font-semibold text-foreground">
-                {current.progress.status === "REVEALED"
-                  ? "Answer revealed"
-                  : current.progress.isCorrect
-                    ? "Correct!"
-                    : "Not quite"}
-              </p>
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold text-foreground">
+                  {current.progress.status === "REVEALED"
+                    ? "Answer revealed"
+                    : current.progress.isCorrect
+                      ? "Correct!"
+                      : "Not quite"}
+                </p>
+                {current.progress.timeSpentMs != null && (
+                  <p className="shrink-0 text-[11px] font-medium text-muted">
+                    ⏱ {formatDuration(current.progress.timeSpentMs)}
+                  </p>
+                )}
+              </div>
               {current.progress.explanation && (
                 <p className="text-xs leading-relaxed text-muted">
                   {current.progress.explanation}

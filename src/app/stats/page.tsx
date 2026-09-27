@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { getUserStats } from "@/lib/queries";
 import { TopBar } from "@/components/TopBar";
 import { subjectMeta } from "@/lib/subject-meta";
+import { formatDuration } from "@/lib/format";
 
 function StatTile({ label, value }: { label: string; value: string | number }) {
   return (
@@ -43,6 +44,7 @@ export default async function StatsPage() {
           <StatTile label="Attempted" value={stats.answered} />
           <StatTile label="Correct" value={stats.correct} />
           <StatTile label="Accuracy" value={`${stats.accuracy}%`} />
+          <StatTile label="Avg time" value={formatDuration(stats.avgTimeMs)} />
         </div>
 
         <p className="-mb-3 text-xs text-muted">
@@ -76,6 +78,7 @@ export default async function StatsPage() {
                     <p className="truncate text-sm font-medium text-foreground">{s.name}</p>
                     <p className="text-xs text-muted">
                       {s.correct}/{s.attempted} correct
+                      {s.avgTimeMs != null ? ` · ${formatDuration(s.avgTimeMs)} avg` : ""}
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-foreground">{pct}%</p>
@@ -97,7 +100,11 @@ export default async function StatsPage() {
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-medium text-foreground">{DIFFICULTY_LABEL[d]}</span>
                     <span className="text-muted">
-                      {t.attempted > 0 ? `${t.correct}/${t.attempted} · ${pct}%` : "Not attempted"}
+                      {t.attempted > 0
+                        ? `${t.correct}/${t.attempted} · ${pct}%${
+                            t.avgTimeMs != null ? ` · ${formatDuration(t.avgTimeMs)} avg` : ""
+                          }`
+                        : "Not attempted"}
                     </span>
                   </div>
                   <Bar pct={pct} color={DIFFICULTY_COLOR[d]} />
@@ -124,7 +131,10 @@ export default async function StatsPage() {
                   <p className="text-lg font-semibold text-foreground">
                     {t.attempted > 0 ? `${pct}%` : "—"}
                   </p>
-                  <p className="text-[11px] text-muted">{t.correct}/{t.attempted} correct</p>
+                  <p className="text-[11px] text-muted">
+                    {t.correct}/{t.attempted} correct
+                    {t.avgTimeMs != null ? ` · ${formatDuration(t.avgTimeMs)} avg` : ""}
+                  </p>
                 </div>
               );
             })}

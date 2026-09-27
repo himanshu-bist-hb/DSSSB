@@ -4,6 +4,7 @@ import { getTopicResult } from "@/lib/queries";
 import { TopBar } from "@/components/TopBar";
 import { DifficultyPill } from "@/components/DifficultyPill";
 import { ResultActions } from "@/components/ResultActions";
+import { formatDuration } from "@/lib/format";
 
 export default async function TopicResultPage({
   params,
@@ -40,6 +41,30 @@ export default async function TopicResultPage({
             <p className="text-[11px] font-medium text-muted">Wrong</p>
           </div>
         </div>
+
+        <section className="flex flex-col gap-2.5">
+          <p className="px-1 text-xs font-medium text-muted">Time</p>
+          <div className="flex gap-2.5">
+            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+              <p className="text-lg font-semibold text-foreground">
+                {formatDuration(data.avgTimeMs)}
+              </p>
+              <p className="text-[11px] font-medium text-muted">Avg / question</p>
+            </div>
+            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+              <p className="text-lg font-semibold text-[#3f7a53]">
+                {formatDuration(data.avgTimeCorrectMs)}
+              </p>
+              <p className="text-[11px] font-medium text-muted">Avg when correct</p>
+            </div>
+            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+              <p className="text-lg font-semibold text-[#a13a3a]">
+                {formatDuration(data.avgTimeWrongMs)}
+              </p>
+              <p className="text-[11px] font-medium text-muted">Avg when wrong</p>
+            </div>
+          </div>
+        </section>
 
         <section className="flex flex-col gap-2.5">
           <p className="px-1 text-xs font-medium text-muted">PYQ performance</p>
@@ -90,6 +115,11 @@ export default async function TopicResultPage({
                     {q.isPYQ && (
                       <span className="rounded-md bg-[#efece3] px-2 py-0.5 text-[11px] font-medium text-muted">
                         PYQ{q.pyqYear ? ` · ${q.pyqYear}` : ""}
+                      </span>
+                    )}
+                    {q.timeSpentMs != null && (
+                      <span className="ml-auto shrink-0 text-[11px] font-medium text-muted">
+                        ⏱ {formatDuration(q.timeSpentMs)}
                       </span>
                     )}
                   </div>

@@ -55,12 +55,19 @@ export async function getSubjectWithTopics(subjectSlug: string, userId: string) 
 
   const progress = await prisma.userProgress.findMany({
     where: { userId, question: { topic: { subjectId: subject.id } } },
-    select: { question: { select: { topicId: true } }, status: true, isCorrect: true },
+    select: {
+      question: { select: { topicId: true } },
+      status: true,
+      isCorrect: true,
+      timeSpentMs: true,
+    },
   });
 
   const attemptedByTopic = new Map<string, number>();
   const correctByTopic = new Map<string, number>();
   const wrongByTopic = new Map<string, number>();
+  const timeSumByTopic = new Map<string, number>();
+  const timeCountByTopic = new Map<string, number>();
   for (const p of progress) {
     const tId = p.question.topicId;
     attemptedByTopic.set(tId, (attemptedByTopic.get(tId) ?? 0) + 1);
@@ -68,21 +75,29 @@ export async function getSubjectWithTopics(subjectSlug: string, userId: string) 
       if (p.isCorrect) correctByTopic.set(tId, (correctByTopic.get(tId) ?? 0) + 1);
       else wrongByTopic.set(tId, (wrongByTopic.get(tId) ?? 0) + 1);
     }
+    if (p.timeSpentMs != null) {
+      timeSumByTopic.set(tId, (timeSumByTopic.get(tId) ?? 0) + p.timeSpentMs);
+      timeCountByTopic.set(tId, (timeCountByTopic.get(tId) ?? 0) + 1);
+    }
   }
 
   return {
     id: subject.id,
     slug: subject.slug,
     name: subject.name,
-    topics: subject.topics.map((t) => ({
-      id: t.id,
-      slug: t.slug,
-      name: t.name,
-      questionCount: t._count.questions,
-      attemptedCount: attemptedByTopic.get(t.id) ?? 0,
-      correctCount: correctByTopic.get(t.id) ?? 0,
-      wrongCount: wrongByTopic.get(t.id) ?? 0,
-    })),
+    topics: subject.topics.map((t) => {
+      const timeCount = timeCountByTopic.get(t.id) ?? 0;
+      return {
+        id: t.id,
+        slug: t.slug,
+        name: t.name,
+        questionCount: t._count.questions,
+        attemptedCount: attemptedByTopic.get(t.id) ?? 0,
+        correctCount: correctByTopic.get(t.id) ?? 0,
+        wrongCount: wrongByTopic.get(t.id) ?? 0,
+        avgTimeMs: timeCount > 0 ? Math.round((timeSumByTopic.get(t.id) ?? 0) / timeCount) : null,
+      };
+    }),
   };
 }
 
@@ -97,6 +112,7 @@ export type ResultQuestion = {
   isPYQ: boolean;
   pyqYear: number | null;
   pyqShift: string | null;
+  timeSpentMs: number | null;
 };
 
 export type TopicResult = {
@@ -109,6 +125,9 @@ export type TopicResult = {
   pyqAttempted: number;
   pyqCorrect: number;
   pyqWrong: number;
+  avgTimeMs: number | null;
+  avgTimeCorrectMs: number | null;
+  avgTimeWrongMs: number | null;
   wrongQuestions: ResultQuestion[];
 };
 
@@ -132,6 +151,7 @@ export async function getTopicResult(
       status: true,
       selectedOption: true,
       isCorrect: true,
+      timeSpentMs: true,
       question: {
         select: {
           id: true,
@@ -151,14 +171,32 @@ export async function getTopicResult(
   let correct = 0;
   let pyqAttempted = 0;
   let pyqCorrect = 0;
+  let timeSum = 0;
+  let timeCount = 0;
+  let correctTimeSum = 0;
+  let correctTimeCount = 0;
+  let wrongTimeSum = 0;
+  let wrongTimeCount = 0;
   const wrongQuestions: ResultQuestion[] = [];
   for (const p of progress) {
     if (p.status !== "ATTEMPTED") continue;
+    if (p.timeSpentMs != null) {
+      timeSum += p.timeSpentMs;
+      timeCount += 1;
+    }
     if (p.question.isPYQ) pyqAttempted += 1;
     if (p.isCorrect) {
       correct += 1;
       if (p.question.isPYQ) pyqCorrect += 1;
+      if (p.timeSpentMs != null) {
+        correctTimeSum += p.timeSpentMs;
+        correctTimeCount += 1;
+      }
       continue;
+    }
+    if (p.timeSpentMs != null) {
+      wrongTimeSum += p.timeSpentMs;
+      wrongTimeCount += 1;
     }
     wrongQuestions.push({
       id: p.question.id,
@@ -171,6 +209,7 @@ export async function getTopicResult(
       isPYQ: p.question.isPYQ,
       pyqYear: p.question.pyqYear,
       pyqShift: p.question.pyqShift,
+      timeSpentMs: p.timeSpentMs,
     });
   }
 
@@ -184,11 +223,27 @@ export async function getTopicResult(
     pyqAttempted,
     pyqCorrect,
     pyqWrong: pyqAttempted - pyqCorrect,
+    avgTimeMs: timeCount > 0 ? Math.round(timeSum / timeCount) : null,
+    avgTimeCorrectMs: correctTimeCount > 0 ? Math.round(correctTimeSum / correctTimeCount) : null,
+    avgTimeWrongMs: wrongTimeCount > 0 ? Math.round(wrongTimeSum / wrongTimeCount) : null,
     wrongQuestions,
   };
 }
 
-type Tally = { attempted: number; correct: number };
+type Tally = { attempted: number; correct: number; avgTimeMs: number | null };
+type TallyAcc = { attempted: number; correct: number; timeSum: number; timeCount: number };
+
+function newTallyAcc(): TallyAcc {
+  return { attempted: 0, correct: 0, timeSum: 0, timeCount: 0 };
+}
+
+function finalizeTally(acc: TallyAcc): Tally {
+  return {
+    attempted: acc.attempted,
+    correct: acc.correct,
+    avgTimeMs: acc.timeCount > 0 ? Math.round(acc.timeSum / acc.timeCount) : null,
+  };
+}
 
 export type UserStats = {
   totalQuestions: number;
@@ -197,6 +252,7 @@ export type UserStats = {
   correct: number;
   incorrect: number;
   accuracy: number; // % of answered questions that were correct
+  avgTimeMs: number | null;
   bySubject: (Tally & { id: string; slug: string; name: string })[];
   byDifficulty: Record<Difficulty, Tally>;
   pyq: Tally;
@@ -211,6 +267,7 @@ export async function getUserStats(userId: string): Promise<UserStats> {
       select: {
         status: true,
         isCorrect: true,
+        timeSpentMs: true,
         question: {
           select: {
             difficulty: true,
@@ -222,17 +279,19 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     }),
   ]);
 
-  const bySubject = new Map<string, Tally & { id: string; slug: string; name: string }>();
-  const byDifficulty: Record<Difficulty, Tally> = {
-    EASY: { attempted: 0, correct: 0 },
-    MEDIUM: { attempted: 0, correct: 0 },
-    HARD: { attempted: 0, correct: 0 },
+  const bySubject = new Map<string, TallyAcc & { id: string; slug: string; name: string }>();
+  const byDifficulty: Record<Difficulty, TallyAcc> = {
+    EASY: newTallyAcc(),
+    MEDIUM: newTallyAcc(),
+    HARD: newTallyAcc(),
   };
-  const pyq: Tally = { attempted: 0, correct: 0 };
-  const nonPyq: Tally = { attempted: 0, correct: 0 };
+  const pyq: TallyAcc = newTallyAcc();
+  const nonPyq: TallyAcc = newTallyAcc();
 
   let answered = 0;
   let correct = 0;
+  let timeSum = 0;
+  let timeCount = 0;
 
   for (const p of progress) {
     const isAnswered = p.status === "ATTEMPTED";
@@ -241,22 +300,38 @@ export async function getUserStats(userId: string): Promise<UserStats> {
       answered += 1;
       if (wasCorrect) correct += 1;
     }
+    if (p.timeSpentMs != null) {
+      timeSum += p.timeSpentMs;
+      timeCount += 1;
+    }
 
     const subj = p.question.topic.subject;
-    const s = bySubject.get(subj.id) ?? { ...subj, attempted: 0, correct: 0 };
+    const s = bySubject.get(subj.id) ?? { ...subj, ...newTallyAcc() };
     s.attempted += 1;
     if (wasCorrect) s.correct += 1;
+    if (p.timeSpentMs != null) {
+      s.timeSum += p.timeSpentMs;
+      s.timeCount += 1;
+    }
     bySubject.set(subj.id, s);
 
     const diff = byDifficulty[p.question.difficulty as Difficulty];
     if (diff) {
       diff.attempted += 1;
       if (wasCorrect) diff.correct += 1;
+      if (p.timeSpentMs != null) {
+        diff.timeSum += p.timeSpentMs;
+        diff.timeCount += 1;
+      }
     }
 
     const bucket = p.question.isPYQ ? pyq : nonPyq;
     bucket.attempted += 1;
     if (wasCorrect) bucket.correct += 1;
+    if (p.timeSpentMs != null) {
+      bucket.timeSum += p.timeSpentMs;
+      bucket.timeCount += 1;
+    }
   }
 
   return {
@@ -265,11 +340,18 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     answered,
     correct,
     incorrect: answered - correct,
+    avgTimeMs: timeCount > 0 ? Math.round(timeSum / timeCount) : null,
     accuracy: answered > 0 ? Math.round((correct / answered) * 100) : 0,
-    bySubject: [...bySubject.values()].sort((a, b) => b.attempted - a.attempted),
-    byDifficulty,
-    pyq,
-    nonPyq,
+    bySubject: [...bySubject.values()]
+      .map((s) => ({ id: s.id, slug: s.slug, name: s.name, ...finalizeTally(s) }))
+      .sort((a, b) => b.attempted - a.attempted),
+    byDifficulty: {
+      EASY: finalizeTally(byDifficulty.EASY),
+      MEDIUM: finalizeTally(byDifficulty.MEDIUM),
+      HARD: finalizeTally(byDifficulty.HARD),
+    },
+    pyq: finalizeTally(pyq),
+    nonPyq: finalizeTally(nonPyq),
   };
 }
 
@@ -287,6 +369,7 @@ export type QuestionForClient = {
     isCorrect: boolean | null;
     correctOption: string;
     explanation: string | null;
+    timeSpentMs: number | null;
   } | null;
 };
 
@@ -326,6 +409,7 @@ export async function getTopicQuiz(subjectSlug: string, topicSlug: string, userI
             isCorrect: p.isCorrect,
             correctOption: q.correctOption,
             explanation: q.explanation,
+            timeSpentMs: p.timeSpentMs,
           }
         : null,
     };
