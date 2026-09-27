@@ -1,22 +1,26 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { getSubjectsOverview } from "@/lib/queries";
-import { subjectMeta } from "@/lib/subject-meta";
-import { ProgressBadge } from "@/components/ProgressBadge";
+import { getUserStats } from "@/lib/queries";
 import { SignOutButton } from "@/components/SignOutButton";
+
+function greeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 export default async function HomePage() {
   const session = await auth();
-  const subjects = await getSubjectsOverview(session!.user.id);
+  const stats = await getUserStats(session!.user.id);
+  const firstName = session!.user.name?.split(" ")[0] ?? "there";
 
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex items-center justify-between gap-3 px-5 pb-3 pt-6">
         <div>
-          <p className="text-xs font-medium text-muted">Good luck with your prep</p>
-          <h1 className="text-xl font-semibold text-foreground">
-            What are we studying today?
-          </h1>
+          <p className="text-xs font-medium text-muted">{greeting()}</p>
+          <h1 className="text-xl font-semibold text-foreground">{firstName}</h1>
         </div>
         <div className="flex items-center gap-2">
           {session!.user.isAdmin && (
@@ -38,36 +42,34 @@ export default async function HomePage() {
       </div>
 
       <div className="flex flex-1 flex-col gap-2.5 px-5 pb-8">
-        {subjects.map((s) => {
-          const meta = subjectMeta(s.slug);
-          return (
-            <Link
-              key={s.id}
-              href={`/subjects/${s.slug}`}
-              className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 transition active:scale-[0.99]"
-            >
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-semibold"
-                style={{ backgroundColor: meta.soft, color: meta.color }}
-              >
-                {meta.icon}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">{s.name}</p>
-                <p className="text-xs text-muted">
-                  {s.topicCount} topics · {s.questionCount} questions
-                </p>
-              </div>
-              <ProgressBadge attempted={s.attemptedCount} total={s.questionCount} />
-            </Link>
-          );
-        })}
+        <div className="flex gap-2.5">
+          <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+            <p className="text-xl font-semibold text-foreground">{stats.answered}</p>
+            <p className="text-[11px] font-medium text-muted">Attempted</p>
+          </div>
+          <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+            <p className="text-xl font-semibold text-foreground">{stats.accuracy}%</p>
+            <p className="text-[11px] font-medium text-muted">Accuracy</p>
+          </div>
+        </div>
 
-        {subjects.length === 0 && (
-          <p className="mt-10 text-center text-sm text-muted">
-            No subjects yet. Seed the database to get started.
-          </p>
-        )}
+        <Link
+          href="/practice"
+          className="group mt-2 flex items-center gap-4 rounded-2xl border border-border bg-card px-5 py-5 transition active:scale-[0.99]"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-2xl">
+            📝
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-base font-semibold text-foreground">Question Practice</p>
+            <p className="text-xs text-muted">
+              {stats.answered > 0
+                ? `${stats.answered} of ${stats.totalQuestions} questions done · pick a subject to continue`
+                : "Pick a subject and start practicing"}
+            </p>
+          </div>
+          <span className="text-muted transition group-active:translate-x-0.5">→</span>
+        </Link>
       </div>
     </div>
   );

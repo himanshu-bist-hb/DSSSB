@@ -17,7 +17,7 @@ export default async function SubjectPage({
 
   return (
     <div className="flex flex-1 flex-col">
-      <TopBar backHref="/" eyebrow="Home" title={subject.name} />
+      <TopBar backHref="/practice" eyebrow="Practice" title={subject.name} />
 
       <div className="flex flex-1 flex-col gap-2.5 px-5 py-4">
         <p className="px-1 text-xs font-medium text-muted">Choose a topic</p>
