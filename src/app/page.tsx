@@ -84,6 +84,20 @@ export default async function HomePage() {
           </div>
           <span className="text-muted transition group-active:translate-x-0.5">→</span>
         </Link>
+
+        <Link
+          href="/doubt"
+          className="group flex items-center gap-4 rounded-2xl border border-border bg-card px-5 py-5 transition active:scale-[0.99]"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-2xl">
+            📷
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-base font-semibold text-foreground">AI Doubt Solver</p>
+            <p className="text-xs text-muted">Snap or upload any question, get an answer, explanation and exam tricks</p>
+          </div>
+          <span className="text-muted transition group-active:translate-x-0.5">→</span>
+        </Link>
       </div>
     </div>
   );
