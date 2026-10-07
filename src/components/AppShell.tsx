@@ -17,6 +17,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const items: NavItem[] = [
     { href: "/", label: "Dashboard", icon: "🏠" },
     { href: "/practice", label: "Question Practice", icon: "📝" },
+    { href: "/mock-tests", label: "Mock Tests", icon: "⏱️" },
     { href: "/tutor", label: "AI Tutor", icon: "🎧" },
     { href: "/doubt", label: "AI Doubt Solver", icon: "📷" },
     { href: "/stats", label: "Performance", icon: "📊" },

@@ -1,0 +1,18 @@
+{
+  "slug": "tgt-sst-mock-1",
+  "title": "DSSSB TGT S.St - Full Mock Test 1",
+  "description": "Full-length test in the real exam pattern.",
+  "durationMin": 120,
+  "marksPerCorrect": 1,
+  "negativeMarks": 0.25,
+  "order": 1,
+  "questions": [
+    {
+      "section": "General Awareness",
+      "text": "Example question text?",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 2,
+      "explanation": "Optional. Shown on the result page after the test."
+    }
+  ]
+}

@@ -14,6 +14,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:pyq-sst": "tsx prisma/seed-pyq-sst.ts",
     "db:seed:pyq-2025": "tsx prisma/seed-pyq-2025-bank.ts",
+    "db:seed:mock": "tsx prisma/seed-mock-tests.ts",
     "db:studio": "prisma studio"
   },
   "prisma": {

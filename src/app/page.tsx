@@ -46,8 +46,8 @@ export default async function HomePage() {
       </div>
       </div>
 
-      <div className="page-wrap flex flex-1 flex-col gap-2.5 pb-8 lg:grid lg:flex-none lg:grid-cols-3 lg:content-start lg:gap-5 lg:py-8">
-        <div className="flex gap-2.5 lg:col-span-3 lg:gap-5">
+      <div className="page-wrap flex flex-1 flex-col gap-2.5 pb-8 lg:grid lg:flex-none lg:grid-cols-2 lg:content-start lg:gap-5 lg:py-8">
+        <div className="flex gap-2.5 lg:col-span-full lg:gap-5">
           <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-6">
             <p className="text-xl font-semibold text-foreground lg:text-3xl">{stats.answered}</p>
             <p className="text-[11px] font-medium text-muted">Attempted</p>
@@ -72,6 +72,20 @@ export default async function HomePage() {
                 ? `${stats.answered} of ${stats.totalQuestions} questions done · pick a subject to continue`
                 : "Pick a subject and start practicing"}
             </p>
+          </div>
+          <span className="text-muted transition group-active:translate-x-0.5">→</span>
+        </Link>
+
+        <Link
+          href="/mock-tests"
+          className="group flex items-center gap-4 rounded-2xl border border-border bg-card px-5 py-5 transition active:scale-[0.99] lg:hover:border-accent lg:hover:shadow-md"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-2xl">
+            ⏱️
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-base font-semibold text-foreground">Mock Tests</p>
+            <p className="text-xs text-muted">Full-length timed tests with negative marking and analysis</p>
           </div>
           <span className="text-muted transition group-active:translate-x-0.5">→</span>
         </Link>

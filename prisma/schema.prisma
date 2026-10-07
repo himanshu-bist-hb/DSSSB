@@ -23,6 +23,7 @@ model User {
   accounts Account[]
   sessions Session[]
   progress UserProgress[]
+  mockAttempts MockAttempt[]
 
   @@map("users")
 }
@@ -146,4 +147,70 @@ model UserProgress {
   @@unique([userId, questionId])
   @@index([userId])
   @@map("user_progress")
+}
+
+// ---------- Mock tests ----------
+// Full-length timed tests, independent of the topic-wise question bank.
+// Scoring is per test: +marksPerCorrect for a right answer, -negativeMarks for
+// a wrong one, 0 for unattempted (DSSSB default: +1 / -0.25).
+
+model MockTest {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  description    String?  @db.NVarChar(Max)
+  durationMin    Int
+  marksPerCorrect Float   @default(1)
+  negativeMarks  Float    @default(0.25)
+  isPublished    Boolean  @default(true)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  questions MockTestQuestion[]
+  attempts  MockAttempt[]
+
+  @@map("mock_tests")
+}
+
+// options stored as a JSON string, same shape as Question.options.
+// `section` groups questions (e.g. "General Awareness") for section-wise analysis.
+model MockTestQuestion {
+  id            String  @id @default(cuid())
+  testId        String
+  order         Int     @default(0)
+  section       String?
+  text          String  @db.NVarChar(Max)
+  options       String  @db.NVarChar(Max)
+  correctOption String
+  explanation   String? @db.NVarChar(Max)
+
+  test MockTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([testId])
+  @@map("mock_test_questions")
+}
+
+// One row per start of a test. `answers` is a JSON string:
+// { [questionId]: { sel: string | null, marked: boolean, visited: boolean, timeMs: number } }
+// status is "IN_PROGRESS" | "SUBMITTED". The countdown is derived from startedAt on the
+// server, so refreshing the page can't reset the clock.
+model MockAttempt {
+  id           String    @id @default(cuid())
+  userId       String
+  testId       String
+  status       String    @default("IN_PROGRESS")
+  startedAt    DateTime  @default(now())
+  submittedAt  DateTime?
+  answers      String    @default("{}") @db.NVarChar(Max)
+  score        Float?
+  correct      Int?
+  wrong        Int?
+  unattempted  Int?
+  timeTakenSec Int?
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test MockTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([userId, testId])
+  @@map("mock_attempts")
 }
