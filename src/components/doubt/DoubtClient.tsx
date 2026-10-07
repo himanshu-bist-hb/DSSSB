@@ -158,7 +158,7 @@ export function DoubtClient() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-5 py-4">
+    <div className="page-wrap flex flex-1 flex-col gap-5 py-4 lg:max-w-[920px]! lg:py-8">
       {stage === "capture" && (
         <>
           <section className="rounded-2xl border border-border bg-card p-4">

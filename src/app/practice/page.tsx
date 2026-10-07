@@ -13,8 +13,8 @@ export default async function PracticePage() {
     <div className="flex flex-1 flex-col">
       <TopBar backHref="/" eyebrow="Home" title="Question Practice" />
 
-      <div className="flex flex-1 flex-col gap-2.5 px-5 py-4">
-        <p className="px-1 text-xs font-medium text-muted">Choose a subject to practice</p>
+      <div className="page-wrap flex flex-1 flex-col gap-2.5 py-4 lg:grid lg:flex-none lg:grid-cols-2 lg:content-start lg:gap-4 lg:py-8 xl:grid-cols-3">
+        <p className="px-1 text-xs lg:col-span-full lg:text-sm font-medium text-muted">Choose a subject to practice</p>
 
         {subjects.map((s) => {
           const meta = subjectMeta(s.slug);
@@ -22,7 +22,7 @@ export default async function PracticePage() {
             <Link
               key={s.id}
               href={`/subjects/${s.slug}`}
-              className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 transition active:scale-[0.99]"
+              className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 transition active:scale-[0.99] lg:px-5 lg:py-5 lg:hover:border-accent lg:hover:shadow-md"
             >
               <div
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-semibold"
@@ -42,7 +42,7 @@ export default async function PracticePage() {
         })}
 
         {subjects.length === 0 && (
-          <p className="mt-10 text-center text-sm text-muted">
+          <p className="mt-10 text-center lg:col-span-full text-sm text-muted">
             No subjects yet. Seed the database to get started.
           </p>
         )}

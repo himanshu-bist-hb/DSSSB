@@ -6,8 +6,8 @@ import { formatDuration } from "@/lib/format";
 
 function StatTile({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
-      <p className="text-xl font-semibold text-foreground">{value}</p>
+    <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-6">
+      <p className="text-xl font-semibold text-foreground lg:text-3xl">{value}</p>
       <p className="text-[11px] font-medium text-muted">{label}</p>
     </div>
   );
@@ -39,8 +39,8 @@ export default async function StatsPage() {
     <div className="flex flex-1 flex-col">
       <TopBar backHref="/" eyebrow="Home" title="Your Performance" />
 
-      <div className="flex flex-1 flex-col gap-6 px-5 py-4">
-        <div className="flex gap-2.5">
+      <div className="page-wrap flex flex-1 flex-col gap-6 py-4 lg:py-8">
+        <div className="flex gap-2.5 lg:gap-5">
           <StatTile label="Attempted" value={stats.answered} />
           <StatTile label="Correct" value={stats.correct} />
           <StatTile label="Accuracy" value={`${stats.accuracy}%`} />
@@ -59,6 +59,7 @@ export default async function StatsPage() {
               No attempts yet — start a topic to see your stats here.
             </p>
           )}
+          <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:gap-4 xl:grid-cols-3">
           {stats.bySubject.map((s) => {
             const meta = subjectMeta(s.slug);
             const pct = s.attempted > 0 ? Math.round((s.correct / s.attempted) * 100) : 0;
@@ -87,8 +88,10 @@ export default async function StatsPage() {
               </div>
             );
           })}
+          </div>
         </section>
 
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
         <section className="flex flex-col gap-2.5">
           <p className="px-1 text-xs font-medium text-muted">By difficulty</p>
           <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card px-4 py-3.5">
@@ -140,6 +143,7 @@ export default async function StatsPage() {
             })}
           </div>
         </section>
+        </div>
       </div>
     </div>
   );

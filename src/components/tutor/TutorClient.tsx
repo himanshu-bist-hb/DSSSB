@@ -148,8 +148,8 @@ export function TutorClient() {
   const canGenerate = topic.trim().length > 0 && !busy;
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-5 py-4">
-      <section className="rounded-2xl border border-border bg-card p-4">
+    <div className="page-wrap flex flex-1 flex-col gap-5 py-4 lg:grid lg:flex-none lg:grid-cols-[minmax(0,480px)_minmax(0,1fr)] lg:items-start lg:gap-8 lg:py-8">
+      <section className="rounded-2xl border border-border bg-card p-4 lg:col-start-1 lg:row-span-4 lg:row-start-1 lg:p-6">
         <div className="mb-3 flex items-center gap-2">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-lg">
             🎧
@@ -333,20 +333,20 @@ export function TutorClient() {
       </section>
 
       {busy && (
-        <section className="rounded-2xl border border-border bg-card p-4">
+        <section className="rounded-2xl border border-border bg-card p-4 lg:col-start-2 lg:p-6">
           <Steps stage={stage} sectionProgress={sectionProgress} mode={mode} />
         </section>
       )}
 
       {error && (
-        <section className="rounded-2xl border border-[#a13a3a] bg-[#f8e6e6] p-4">
+        <section className="rounded-2xl border border-[#a13a3a] bg-[#f8e6e6] p-4 lg:col-start-2">
           <p className="text-sm font-semibold text-[#8a2f2f]">Something went wrong</p>
           <p className="mt-1 text-xs text-[#8a2f2f]">{error}</p>
         </section>
       )}
 
       {result && stage === "done" && (
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 lg:col-start-2">
           <div>
             <p className="text-xs font-medium text-muted">Ready</p>
             <h2 className="text-lg font-semibold text-foreground">{result.plan.title}</h2>

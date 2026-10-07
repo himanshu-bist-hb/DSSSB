@@ -8,7 +8,29 @@ export default async function LoginPage({
   const { callbackUrl } = await searchParams;
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-10 px-8 text-center">
+    <div className="flex flex-1 lg:grid lg:grid-cols-[1.1fr_1fr]">
+      <div className="relative hidden flex-col justify-between bg-[#5a1620] p-14 text-white lg:flex">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white text-sm font-bold text-accent">
+            SS
+          </div>
+          <p className="text-lg font-semibold">DSSSB TGT S.St</p>
+        </div>
+        <div className="max-w-xl">
+          <h2 className="text-4xl font-semibold leading-tight xl:text-5xl">
+            Prepare for DSSSB TGT Social Studies, the smart way.
+          </h2>
+          <ul className="mt-8 space-y-4 text-base text-white/80">
+            <li className="flex gap-3"><span>✔</span> Subject-wise and topic-wise MCQ practice</li>
+            <li className="flex gap-3"><span>✔</span> Previous year questions with explanations</li>
+            <li className="flex gap-3"><span>✔</span> Per-question timing and performance analytics</li>
+            <li className="flex gap-3"><span>✔</span> AI tutor for audio lessons and an AI doubt solver</li>
+          </ul>
+        </div>
+        <p className="text-xs text-white/50">Exam Practice Portal</p>
+      </div>
+
+      <div className="flex flex-1 flex-col items-center justify-center gap-10 px-8 text-center lg:mx-auto lg:w-full lg:max-w-md">
       <div className="flex flex-col items-center gap-3">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-xl font-semibold text-white">
           SS
@@ -56,6 +78,7 @@ export default async function LoginPage({
         Sign-in is limited to Google accounts. We use it only to save your practice
         progress.
       </p>
+      </div>
     </div>
   );
 }

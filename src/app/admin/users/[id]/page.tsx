@@ -14,7 +14,7 @@ const fmt = new Intl.DateTimeFormat("en-IN", {
 
 function StatTile({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+    <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-6">
       <p className="text-xl font-semibold text-foreground">{value}</p>
       <p className="text-[11px] font-medium text-muted">{label}</p>
     </div>
@@ -46,12 +46,12 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
     <div className="flex flex-1 flex-col">
       <TopBar backHref="/admin" eyebrow="Admin" title={r.user.name ?? r.user.email} />
 
-      <div className="flex flex-1 flex-col gap-6 px-5 py-4">
+      <div className="page-wrap flex flex-1 flex-col gap-6 py-4 lg:py-8">
         <p className="-mb-3 text-xs text-muted">
           {r.user.email} · Joined {fmt.format(r.user.createdAt)}
         </p>
 
-        <div className="flex gap-2.5">
+        <div className="flex gap-2.5 lg:gap-5">
           <StatTile label="Attempted" value={r.answered} />
           <StatTile label="Correct" value={r.correct} />
           <StatTile label="Wrong" value={r.answered - r.correct} />

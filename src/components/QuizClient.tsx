@@ -195,6 +195,27 @@ export function QuizClient({
   const allDone = questions.length > 0 && attemptedCount === questions.length;
   const correctCount = questions.filter((q) => q.progress?.isCorrect).length;
 
+  // Desktop keyboard shortcuts: A–D / 1–4 answer, ←/→ navigate.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.key === "ArrowRight") {
+        setIndex((i) => Math.min(i + 1, Math.max(filtered.length - 1, 0)));
+      } else if (e.key === "ArrowLeft") {
+        setIndex((i) => Math.max(i - 1, 0));
+      } else if (current && !current.progress && !pending) {
+        const k = e.key.toLowerCase();
+        const byNumber = /^[1-9]$/.test(k) ? current.options[Number(k) - 1] : undefined;
+        const opt = byNumber ?? current.options.find((o) => o.id.toLowerCase() === k);
+        if (opt) void answer(opt.id);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   if (questions.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center px-8 text-center text-sm text-muted">
@@ -205,7 +226,7 @@ export function QuizClient({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex gap-1.5 overflow-x-auto px-5 pb-3 pt-1">
+      <div className="page-wrap flex gap-1.5 overflow-x-auto pb-3 pt-1 lg:py-4">
         {FILTERS.map((f) => (
           <button
             key={f}
@@ -242,7 +263,8 @@ export function QuizClient({
           </button>
         </div>
       ) : (
-        <div className="flex flex-1 flex-col px-5 pb-6">
+        <div className="page-wrap flex flex-1 flex-col pb-6 lg:grid lg:flex-none lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-8 lg:pb-10">
+          <div className="flex flex-1 flex-col lg:min-h-[calc(100dvh-14rem)]">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-xs font-medium text-muted">
               Question {boundedIndex + 1} of {filtered.length}
@@ -268,7 +290,7 @@ export function QuizClient({
             />
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-4">
+          <div className="rounded-2xl border border-border bg-card p-4 lg:p-8">
             <div className="mb-2 flex items-center gap-2">
               <DifficultyPill difficulty={current.difficulty} />
               {current.isPYQ && (
@@ -280,10 +302,10 @@ export function QuizClient({
             {current.isPYQ && current.pyqShift && (
               <p className="mb-2 text-[11px] text-muted">Asked in: {current.pyqShift}</p>
             )}
-            <p className="text-sm leading-relaxed text-foreground">{current.text}</p>
+            <p className="text-sm leading-relaxed text-foreground lg:text-lg lg:leading-8">{current.text}</p>
           </div>
 
-          <div className="mt-3 flex flex-col gap-2">
+          <div className="mt-3 flex flex-col gap-2 lg:mt-4 lg:gap-3">
             {current.options.map((opt) => {
               const p = current.progress;
               const isAnswered = !!p;
@@ -292,7 +314,7 @@ export function QuizClient({
               const isWrongSelected = isAnswered && isSelected && !isCorrectOpt;
 
               let cls =
-                "flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition";
+                "flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition lg:gap-4 lg:px-5 lg:py-4 lg:text-base";
               if (!isAnswered) {
                 cls += " border-border bg-card hover:bg-[#f5f3ec]";
               } else if (isCorrectOpt) {
@@ -310,7 +332,7 @@ export function QuizClient({
                   onClick={() => answer(opt.id)}
                   className={cls}
                 >
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[11px] font-medium uppercase">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[11px] font-medium uppercase lg:h-7 lg:w-7 lg:text-xs">
                     {opt.id}
                   </span>
                   <span className="flex-1">{opt.text}</span>
@@ -332,7 +354,7 @@ export function QuizClient({
           )}
 
           {current.progress && (
-            <div className="mt-3 rounded-2xl border border-border bg-[#f5f3ec] p-4">
+            <div className="mt-3 rounded-2xl border border-border bg-[#f5f3ec] p-4 lg:mt-4 lg:p-6">
               <div className="mb-1 flex items-center justify-between gap-2">
                 <p className="text-xs font-semibold text-foreground">
                   {current.progress.status === "REVEALED"
@@ -348,7 +370,7 @@ export function QuizClient({
                 )}
               </div>
               {current.progress.explanation && (
-                <p className="text-xs leading-relaxed text-muted">
+                <p className="text-xs leading-relaxed text-muted lg:text-sm lg:leading-7">
                   {current.progress.explanation}
                 </p>
               )}
@@ -370,18 +392,18 @@ export function QuizClient({
             </div>
           )}
 
-          <div className="mt-auto flex items-center gap-2 pt-6">
+          <div className="mt-auto flex items-center gap-2 pt-6 lg:justify-between lg:pt-8">
             <button
               onClick={() => setIndex((i) => Math.max(i - 1, 0))}
               disabled={boundedIndex === 0}
-              className="flex-1 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground disabled:opacity-40"
+              className="flex-1 rounded-xl border border-border py-2.5 text-sm font-medium text-foreground disabled:opacity-40 lg:flex-none lg:px-8"
             >
               Previous
             </button>
             <button
               onClick={() => setIndex((i) => Math.min(i + 1, filtered.length - 1))}
               disabled={boundedIndex >= filtered.length - 1}
-              className="flex-1 rounded-xl bg-accent py-2.5 text-sm font-medium text-white disabled:opacity-40"
+              className="flex-1 rounded-xl bg-accent py-2.5 text-sm font-medium text-white disabled:opacity-40 lg:flex-none lg:px-10"
             >
               Next
             </button>
@@ -394,6 +416,56 @@ export function QuizClient({
           >
             Clear my answers for this topic
           </button>
+          </div>
+
+          <aside className="hidden flex-col gap-4 rounded-2xl border border-border bg-card p-5 lg:sticky lg:top-24 lg:flex">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">Question palette</p>
+              <p className="mt-1 text-sm text-foreground">
+                <span className="font-semibold">{attemptedCount}</span> of {questions.length} answered
+                {attemptedCount > 0 && (
+                  <>
+                    {" · "}
+                    <span className="font-semibold text-[#3f7a53]">{correctCount}</span> correct
+                  </>
+                )}
+              </p>
+            </div>
+            <div className="grid max-h-[46dvh] grid-cols-5 gap-2 overflow-y-auto pr-1">
+              {filtered.map((fq, i) => {
+                const p = fq.progress;
+                const isCurrent = i === boundedIndex;
+                let tone = "border-border bg-background text-foreground hover:bg-[#f5f3ec]";
+                if (p?.status === "REVEALED") tone = "border-[#a3672b] bg-[#f8ecdd] text-[#a3672b]";
+                else if (p?.isCorrect) tone = "border-[#3f7a53] bg-[#e7f2ea] text-[#2f5f42]";
+                else if (p) tone = "border-[#a13a3a] bg-[#f8e6e6] text-[#8a2f2f]";
+                return (
+                  <button
+                    key={fq.id}
+                    onClick={() => setIndex(i)}
+                    aria-label={`Go to question ${i + 1}`}
+                    aria-current={isCurrent ? "true" : undefined}
+                    className={`flex h-10 items-center justify-center rounded-lg border text-sm font-medium tabular-nums transition ${tone} ${
+                      isCurrent ? "ring-2 ring-accent ring-offset-1" : ""
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-border pt-3 text-[11px] text-muted">
+              <span className="flex items-center gap-1.5"><i className="h-3 w-3 rounded-sm border border-[#3f7a53] bg-[#e7f2ea]" /> Correct</span>
+              <span className="flex items-center gap-1.5"><i className="h-3 w-3 rounded-sm border border-[#a13a3a] bg-[#f8e6e6]" /> Wrong</span>
+              <span className="flex items-center gap-1.5"><i className="h-3 w-3 rounded-sm border border-[#a3672b] bg-[#f8ecdd]" /> Revealed</span>
+              <span className="flex items-center gap-1.5"><i className="h-3 w-3 rounded-sm border border-border bg-background" /> Not attempted</span>
+            </div>
+            <p className="border-t border-border pt-3 text-[11px] leading-relaxed text-muted">
+              Shortcuts: <kbd className="rounded bg-[#efece3] px-1">A</kbd>–<kbd className="rounded bg-[#efece3] px-1">D</kbd> or{" "}
+              <kbd className="rounded bg-[#efece3] px-1">1</kbd>–<kbd className="rounded bg-[#efece3] px-1">4</kbd> to answer,{" "}
+              <kbd className="rounded bg-[#efece3] px-1">←</kbd> <kbd className="rounded bg-[#efece3] px-1">→</kbd> to navigate.
+            </p>
+          </aside>
         </div>
       )}
     </div>

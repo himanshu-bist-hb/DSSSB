@@ -24,19 +24,19 @@ export default async function TopicResultPage({
         title={`${data.topic.name} · Result`}
       />
 
-      <div className="flex flex-1 flex-col gap-5 px-5 py-4">
-        <div className="flex gap-2.5">
-          <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+      <div className="page-wrap flex flex-1 flex-col gap-5 py-4 lg:py-8">
+        <div className="flex gap-2.5 lg:gap-5">
+          <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-5">
             <p className="text-xl font-semibold text-foreground">
               {data.attempted}/{data.totalQuestions}
             </p>
             <p className="text-[11px] font-medium text-muted">Attempted</p>
           </div>
-          <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+          <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-5">
             <p className="text-xl font-semibold text-[#3f7a53]">{data.correct}</p>
             <p className="text-[11px] font-medium text-muted">Correct</p>
           </div>
-          <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+          <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-5">
             <p className="text-xl font-semibold text-[#a13a3a]">{data.wrong}</p>
             <p className="text-[11px] font-medium text-muted">Wrong</p>
           </div>
@@ -44,20 +44,20 @@ export default async function TopicResultPage({
 
         <section className="flex flex-col gap-2.5">
           <p className="px-1 text-xs font-medium text-muted">Time</p>
-          <div className="flex gap-2.5">
-            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+          <div className="flex gap-2.5 lg:gap-5">
+            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-5">
               <p className="text-lg font-semibold text-foreground">
                 {formatDuration(data.avgTimeMs)}
               </p>
               <p className="text-[11px] font-medium text-muted">Avg / question</p>
             </div>
-            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-5">
               <p className="text-lg font-semibold text-[#3f7a53]">
                 {formatDuration(data.avgTimeCorrectMs)}
               </p>
               <p className="text-[11px] font-medium text-muted">Avg when correct</p>
             </div>
-            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-5">
               <p className="text-lg font-semibold text-[#a13a3a]">
                 {formatDuration(data.avgTimeWrongMs)}
               </p>
@@ -68,16 +68,16 @@ export default async function TopicResultPage({
 
         <section className="flex flex-col gap-2.5">
           <p className="px-1 text-xs font-medium text-muted">PYQ performance</p>
-          <div className="flex gap-2.5">
-            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+          <div className="flex gap-2.5 lg:gap-5">
+            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-5">
               <p className="text-lg font-semibold text-foreground">{data.pyqAttempted}</p>
               <p className="text-[11px] font-medium text-muted">PYQ attempted</p>
             </div>
-            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-5">
               <p className="text-lg font-semibold text-[#3f7a53]">{data.pyqCorrect}</p>
               <p className="text-[11px] font-medium text-muted">PYQ correct</p>
             </div>
-            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+            <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-5">
               <p className="text-lg font-semibold text-[#a13a3a]">{data.pyqWrong}</p>
               <p className="text-[11px] font-medium text-muted">PYQ wrong</p>
             </div>
@@ -101,7 +101,8 @@ export default async function TopicResultPage({
                 : "No wrong answers — nice work!"}
             </p>
           ) : (
-            data.wrongQuestions.map((q, i) => {
+            <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4">
+            {data.wrongQuestions.map((q, i) => {
               const selected = q.options.find((o) => o.id === q.selectedOption);
               const correct = q.options.find((o) => o.id === q.correctOption);
               return (
@@ -151,7 +152,8 @@ export default async function TopicResultPage({
                   )}
                 </div>
               );
-            })
+            })}
+            </div>
           )}
         </section>
       </div>

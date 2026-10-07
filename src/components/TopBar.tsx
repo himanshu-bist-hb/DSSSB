@@ -12,7 +12,8 @@ export function TopBar({
   right?: React.ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-background/95 px-5 pb-3 pt-5 backdrop-blur">
+    <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur lg:bg-card/95">
+      <div className="page-wrap flex items-center justify-between gap-3 pb-3 pt-5 lg:py-4">
       <div className="min-w-0">
         {backHref ? (
           <Link
@@ -24,9 +25,10 @@ export function TopBar({
         ) : eyebrow ? (
           <p className="mb-1 text-xs font-medium text-muted">{eyebrow}</p>
         ) : null}
-        <h1 className="truncate text-lg font-semibold text-foreground">{title}</h1>
+        <h1 className="truncate text-lg font-semibold text-foreground lg:text-2xl">{title}</h1>
       </div>
       {right}
+      </div>
     </div>
   );
 }

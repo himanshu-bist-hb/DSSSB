@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 function StatTile({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5">
+    <div className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl border border-border bg-card px-3 py-3.5 lg:py-6">
       <p className="text-xl font-semibold text-foreground">{value}</p>
       <p className="text-center text-[11px] font-medium text-muted">{label}</p>
     </div>
@@ -40,8 +40,8 @@ export default async function AdminPage() {
     <div className="flex flex-1 flex-col">
       <TopBar backHref="/" eyebrow="Home" title="Admin" />
 
-      <div className="flex flex-1 flex-col gap-6 px-5 py-4">
-        <div className="grid grid-cols-3 gap-2.5">
+      <div className="page-wrap flex flex-1 flex-col gap-6 py-4 lg:py-8">
+        <div className="grid grid-cols-3 gap-2.5 lg:grid-cols-6 lg:gap-5">
           <StatTile label="Total users" value={o.totalUsers} />
           <StatTile label="Active (7d)" value={o.active7d} />
           <StatTile label="New (7d)" value={o.newUsers7d} />
@@ -52,6 +52,7 @@ export default async function AdminPage() {
 
         <section className="flex flex-col gap-2.5">
           <p className="px-1 text-xs font-medium text-muted">Users (most recently active first)</p>
+          <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:gap-4 xl:grid-cols-3">
           {o.users.map((u) => (
             <Link
               key={u.id}
@@ -78,6 +79,7 @@ export default async function AdminPage() {
               <p className="text-[11px] font-medium text-foreground">View detailed report →</p>
             </Link>
           ))}
+          </div>
         </section>
       </div>
     </div>
