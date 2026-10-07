@@ -148,37 +148,37 @@ export function TutorClient() {
   const canGenerate = topic.trim().length > 0 && !busy;
 
   return (
-    <div className="page-wrap flex flex-1 flex-col gap-5 py-4 lg:grid lg:flex-none lg:grid-cols-[minmax(0,480px)_minmax(0,1fr)] lg:items-start lg:gap-8 lg:py-8">
-      <section className="rounded-2xl border border-border bg-card p-4 lg:col-start-1 lg:row-span-4 lg:row-start-1 lg:p-6">
-        <div className="mb-3 flex items-center gap-2">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-lg">
+    <div className="page-wrap flex flex-1 flex-col gap-5 py-4 lg:grid lg:flex-none lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-start lg:gap-8 lg:py-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,480px)]">
+      <section className="rounded-2xl border border-border bg-card p-4 lg:p-8">
+        <div className="mb-3 flex items-center gap-2 lg:mb-6 lg:gap-4 lg:border-b lg:border-border lg:pb-5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-lg lg:h-12 lg:w-12 lg:text-2xl">
             🎧
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground">Your AI Teacher</p>
-            <p className="text-xs text-muted">Type a topic and get a full spoken lesson</p>
+            <p className="text-sm font-semibold text-foreground lg:text-xl">Your AI Teacher</p>
+            <p className="text-xs text-muted lg:text-sm">Type a topic and get a full spoken lesson</p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Topic</label>
+        <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-5">
+          <div className="lg:col-span-2">
+            <label className="mb-1 block text-xs font-medium text-muted lg:mb-2 lg:text-sm">Topic</label>
             <input
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. French Revolution, Fundamental Rights, Photosynthesis"
               disabled={busy}
-              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted/70 focus:border-accent focus:outline-none disabled:opacity-60"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground lg:px-4 lg:py-3 lg:text-[15px] placeholder:text-muted/70 focus:border-accent focus:outline-none disabled:opacity-60"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Exam</label>
+            <label className="mb-1 block text-xs font-medium text-muted lg:mb-2 lg:text-sm">Exam</label>
             <select
               value={exam}
               onChange={(e) => setExam(e.target.value)}
               disabled={busy}
-              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none disabled:opacity-60"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground lg:px-4 lg:py-3 lg:text-[15px] focus:border-accent focus:outline-none disabled:opacity-60"
             >
               {EXAMS.map((x) => (
                 <option key={x} value={x}>
@@ -189,7 +189,7 @@ export function TutorClient() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Your level</label>
+            <label className="mb-1 block text-xs font-medium text-muted lg:mb-2 lg:text-sm">Your level</label>
             <div className="flex gap-1.5">
               {LEVELS.map((l) => (
                 <button
@@ -197,7 +197,7 @@ export function TutorClient() {
                   type="button"
                   disabled={busy}
                   onClick={() => setLevel(l)}
-                  className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition disabled:opacity-60 ${
+                  className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition lg:py-2.5 lg:text-sm disabled:opacity-60 ${
                     level === l ? "bg-accent text-white" : "bg-[#efece3] text-muted hover:bg-[#e8e5dd]"
                   }`}
                 >
@@ -208,7 +208,7 @@ export function TutorClient() {
           </div>
 
           <div>
-            <label className="mb-2 flex items-center justify-between text-xs font-medium text-muted">
+            <label className="mb-2 flex items-center justify-between text-xs font-medium text-muted lg:text-sm">
               <span>Lesson length</span>
               <span className="text-foreground">{minutes} min</span>
             </label>
@@ -225,7 +225,7 @@ export function TutorClient() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Lesson language</label>
+            <label className="mb-1 block text-xs font-medium text-muted lg:mb-2 lg:text-sm">Lesson language</label>
             <div className="flex gap-1.5">
               {LANGUAGES.map((l) => (
                 <button
@@ -233,7 +233,7 @@ export function TutorClient() {
                   type="button"
                   disabled={busy}
                   onClick={() => onLanguageChange(l.value)}
-                  className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition disabled:opacity-60 ${
+                  className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition lg:py-2.5 lg:text-sm disabled:opacity-60 ${
                     language === l.value ? "bg-accent text-white" : "bg-[#efece3] text-muted hover:bg-[#e8e5dd]"
                   }`}
                 >
@@ -244,12 +244,12 @@ export function TutorClient() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Teacher voice</label>
+            <label className="mb-1 block text-xs font-medium text-muted lg:mb-2 lg:text-sm">Teacher voice</label>
             <select
               value={voiceLabel}
               onChange={(e) => setVoiceLabel(e.target.value)}
               disabled={busy}
-              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none disabled:opacity-60"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground lg:px-4 lg:py-3 lg:text-[15px] focus:border-accent focus:outline-none disabled:opacity-60"
             >
               {Object.keys(VOICES_BY_LANGUAGE[language]).map((v) => (
                 <option key={v} value={v}>
@@ -259,14 +259,14 @@ export function TutorClient() {
             </select>
           </div>
 
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted">Lesson mode</label>
+          <div className="lg:col-span-2">
+            <label className="mb-1 block text-xs font-medium text-muted lg:mb-2 lg:text-sm">Lesson mode</label>
             <div className="flex gap-1.5">
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => setMode("story")}
-                className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition disabled:opacity-60 ${
+                className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition lg:py-2.5 lg:text-sm disabled:opacity-60 ${
                   mode === "story" ? "bg-accent text-white" : "bg-[#efece3] text-muted hover:bg-[#e8e5dd]"
                 }`}
               >
@@ -276,7 +276,7 @@ export function TutorClient() {
                 type="button"
                 disabled={busy}
                 onClick={() => setMode("teach")}
-                className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition disabled:opacity-60 ${
+                className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition lg:py-2.5 lg:text-sm disabled:opacity-60 ${
                   mode === "teach" ? "bg-accent text-white" : "bg-[#efece3] text-muted hover:bg-[#e8e5dd]"
                 }`}
               >
@@ -291,13 +291,13 @@ export function TutorClient() {
           </div>
 
           {mode === "teach" && (
-            <div>
-              <label className="mb-1 block text-xs font-medium text-muted">Teaching style</label>
+            <div className="lg:col-span-2">
+              <label className="mb-1 block text-xs font-medium text-muted lg:mb-2 lg:text-sm">Teaching style</label>
               <select
                 value={style}
                 onChange={(e) => setStyle(e.target.value as TeachStyle)}
                 disabled={busy}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none disabled:opacity-60"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground lg:px-4 lg:py-3 lg:text-[15px] focus:border-accent focus:outline-none disabled:opacity-60"
               >
                 {TEACH_STYLES.map((s) => (
                   <option key={s} value={s}>
@@ -308,48 +308,76 @@ export function TutorClient() {
             </div>
           )}
 
-          <div>
-            <label className="mb-1 block text-xs font-medium text-muted">
+          <div className="lg:col-span-2">
+            <label className="mb-1 block text-xs font-medium text-muted lg:mb-2 lg:text-sm">
               Anything specific to cover? (optional)
             </label>
             <textarea
               value={focus}
               onChange={(e) => setFocus(e.target.value)}
               disabled={busy}
-              rows={2}
+              rows={3}
               placeholder="e.g. focus on previous-year question patterns, explain with examples"
-              className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted/70 focus:border-accent focus:outline-none disabled:opacity-60"
+              className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground lg:px-4 lg:py-3 lg:text-[15px] placeholder:text-muted/70 focus:border-accent focus:outline-none disabled:opacity-60"
             />
           </div>
 
           <button
             onClick={generate}
             disabled={!canGenerate}
-            className="mt-1 rounded-xl bg-accent py-3 text-sm font-semibold text-white transition active:scale-[0.99] disabled:opacity-40"
+            className="mt-1 rounded-xl bg-accent py-3 text-sm font-semibold text-white transition active:scale-[0.99] disabled:opacity-40 lg:col-span-2 lg:py-4 lg:text-base lg:hover:opacity-90"
           >
             {busy ? "Building your lesson…" : "Generate audio lesson"}
           </button>
         </div>
       </section>
 
+      <div className="flex flex-col gap-5 lg:sticky lg:top-24">
+      {stage === "idle" && (
+        <section className="hidden rounded-2xl border border-border bg-card p-6 lg:block">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">How it works</p>
+          <ol className="mt-4 flex flex-col gap-4">
+            {[
+              ["Choose a topic", "Type any topic from the syllabus and pick your exam and level."],
+              ["AI writes the lesson", "A structured script is planned and written section by section."],
+              ["Listen or download", "Play it here with speed control, or download the MP3 and script."],
+            ].map(([title, text], i) => (
+              <li key={title} className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
+                  {i + 1}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{title}</p>
+                  <p className="text-sm text-muted">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-5 rounded-xl bg-[#f5f3ec] px-4 py-3 text-xs leading-relaxed text-muted">
+            Tip: a 8–12 minute lesson in Story mode works well for first-time topics. Use Teaching
+            mode for quick exam revision.
+          </p>
+        </section>
+      )}
+
       {busy && (
-        <section className="rounded-2xl border border-border bg-card p-4 lg:col-start-2 lg:p-6">
+        <section className="rounded-2xl border border-border bg-card p-4 lg:p-6">
           <Steps stage={stage} sectionProgress={sectionProgress} mode={mode} />
         </section>
       )}
 
       {error && (
-        <section className="rounded-2xl border border-[#a13a3a] bg-[#f8e6e6] p-4 lg:col-start-2">
+        <section className="rounded-2xl border border-[#a13a3a] bg-[#f8e6e6] p-4">
           <p className="text-sm font-semibold text-[#8a2f2f]">Something went wrong</p>
           <p className="mt-1 text-xs text-[#8a2f2f]">{error}</p>
         </section>
       )}
 
       {result && stage === "done" && (
-        <section className="flex flex-col gap-4 lg:col-start-2">
+        <section className="flex flex-col gap-4">
           <div>
             <p className="text-xs font-medium text-muted">Ready</p>
-            <h2 className="text-lg font-semibold text-foreground">{result.plan.title}</h2>
+            <h2 className="text-lg font-semibold text-foreground lg:text-2xl">{result.plan.title}</h2>
           </div>
 
           <div className="flex gap-2.5">
@@ -395,7 +423,7 @@ export function TutorClient() {
               <span className="text-muted">{scriptOpen ? "−" : "+"}</span>
             </button>
             {scriptOpen && (
-              <div className="flex flex-col gap-3 border-t border-border px-4 py-3">
+              <div className="flex flex-col gap-3 border-t border-border px-4 py-3 lg:max-h-[45dvh] lg:overflow-y-auto">
                 {result.plan.sections.map((sec, i) => (
                   <div key={i}>
                     <p className="mb-1 text-xs font-semibold text-foreground">{sec.title}</p>
@@ -413,6 +441,7 @@ export function TutorClient() {
           </p>
         </section>
       )}
+      </div>
     </div>
   );
 }
